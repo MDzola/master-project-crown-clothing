@@ -12,9 +12,11 @@ import CheckoutPage from './pages/checkout/checkout.component'
 import Header from './components/header/header.component';
 
 
-import { auth, createUserProfileDocument } from './firebase/firebase.utils';
+import { auth, createUserProfileDocument, addCollectionAndDocuments } from './firebase/firebase.utils';
 import { setCurrentUser } from './redux/user/user.actions'
 import { selectCurrentUser } from './redux/user/user.selector'
+import { selectCollectionsForPreview } from './redux/shop/shop.selectors'
+import shopReducer from './redux/shop/shop.reducer';
 
 
 class App extends React.Component {
@@ -22,7 +24,7 @@ class App extends React.Component {
 unsubscribeFromAuth = null;
 
 componentDidMount() {
-  const {setCurrentUser} = this.props
+  const {setCurrentUser, collectionsArray} = this.props
 
   this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
     if (userAuth) {
@@ -37,6 +39,9 @@ componentDidMount() {
     }
 
    setCurrentUser(userAuth)
+
+  //  We are adding the collection from our shop data to the firebase db with this
+  //  addCollectionAndDocuments('collections', collectionsArray.map(({title, items}) => ({ title, items })))
   });
 }
 
@@ -67,11 +72,13 @@ componentWillUnmount() {
 }
 
 const mapStateToProps = createStructuredSelector({
-    currentUser: selectCurrentUser
+    currentUser: selectCurrentUser,
+    collectionsArray: selectCollectionsForPreview
 })
 
 const mapDispatchToProps = dispatch => ({
   setCurrentUser: user => dispatch(setCurrentUser(user))
+
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
